@@ -1,6 +1,5 @@
 from typing import List
 from pathlib import Path
-from datetime import datetime
 
 from sqlalchemy import create_engine, String, Boolean, Integer, select, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, Session, relationship
@@ -21,7 +20,7 @@ class UsuarioFerias(Base):
     senha: Mapped[str] = mapped_column(String(128))
     email: Mapped[str] = mapped_column(String(30))
     acesso_gestor: Mapped[bool] = mapped_column(Boolean(), default=False)
-    inicio_empresa: Mapped[str] = mapped_column(String(30))
+    inicio_na_empresa: Mapped[str] = mapped_column(String(30))
     eventos_ferias: Mapped[List["EventosFerias"]] = relationship(
         back_populates='parent',
         lazy='subquery'
@@ -35,44 +34,6 @@ class UsuarioFerias(Base):
 
     def verifica_senha(self, senha):
         return check_password_hash(self.senha, senha)
-    
-    def adiciona_ferias(self, inicio_ferias, final_ferias):
-        total_dias = (
-            datetime.strptime(final_ferias, '%Y-%m-%d')
-            - datetime.strptime(inicio_ferias, '%Y-%m-%d')
-        ).days + 1
-        with Session(bind=engine) as session:
-            ferias = EventosFerias(
-                parent_id=self.id,
-                inicio_ferias = inicio_ferias,
-                fim_ferias = final_ferias,
-                total_dias = total_dias
-            )
-            session.add(ferias)
-            session.commit()
-    
-    def lista_ferias(self):
-        lista_eventos = []
-        for evento in self.eventos_ferias:
-            lista_eventos.append({
-                'title': f'Férias do {self.nome}',
-                'start': evento.inicio_ferias,
-                'end': evento.fim_ferias,
-                'resourceId': self.id
-            })
-        return lista_eventos
-    
-    def dias_para_solicitar(self):
-        total_dias = (
-            datetime.now()
-            - datetime.strptime(self.inicio_empresa, '%Y-%m-%d')
-        ).days * (30 / 365)
-        dias_tirados = 0
-        for evento in self.eventos_ferias:
-            dias_tirados += evento.total_dias
-        return int(total_dias - dias_tirados)
-        
-
 
 
 class EventosFerias(Base):
@@ -91,7 +52,7 @@ Base.metadata.create_all(bind=engine)
 
 
 # CRUD ======================
-def cria_usuarios(
+def cria_usurios(
         nome,
         senha,
         email,
@@ -167,30 +128,29 @@ def deleta_usuario(id):
 
 if __name__ == '__main__':
 
+    pass
 
+
+    # cria_usurios(
+    #     'Adriano Soares',
+    #     senha='adriano',
+    #     email='adriano.com',
+    #     inicio_na_empresa='2022-01-01',
+    #     acesso_gestor=True
+    #     )
     
-    cria_usuarios(
-        'Clara Cavalcante',
-        senha='thia',
-        email="clara.bonancea@hotmail.com",
-        inicio_empresa='2020-01-01',
-        acesso_gestor=False,
-    )
+    # cria_usurios(
+    #     'Juliano Faccioni',
+    #     senha='juliano',
+    #     email='juliano.com',
+    #     inicio_na_empresa='2023-01-01',
+    #     acesso_gestor=True
+    #     )
     
-    
-    cria_usuarios(
-        'Thiarly Cavalcante',
-        senha='thia',
-        email="thiarly.cavalcante@live.com",
-        inicio_empresa='2021-01-01',
-        acesso_gestor=True,
-    )
-    
-    
-    cria_usuarios(
-        'Luca Cavalcante',
-        senha='thia',
-        email="luca.bonancea@hotmail.com",
-        inicio_empresa='2023-01-01',
-        acesso_gestor=True,
-    )
+    # cria_usurios(
+    #     'Mateus Kienzle',
+    #     senha='mateus',
+    #     email='mateus.com',
+    #     inicio_na_empresa='2023-06-01',
+    #     acesso_gestor=False
+    #     )
